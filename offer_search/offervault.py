@@ -104,7 +104,7 @@ def get_offer(browser, offer_link):
     except Exception as err:
         print("No Description.")
         print(err)
-    return offervault_offer
+
     # for test
     print("offer title: ", offervault_offer.title)
     print("offer payout: ", offervault_offer.payout)
@@ -113,6 +113,7 @@ def get_offer(browser, offer_link):
     print("offer update time: ", offervault_offer.offer_update_time)
     print("offer category: ", offervault_offer.category)
     print("offer landing page: ", offervault_offer.land_page)
+    return offervault_offer
 
 
 def get_next_page(browser, retry):
@@ -144,8 +145,9 @@ def offervault_search(keyword):
 
     try:
         df = pd.DataFrame(columns=[
-            'keyword', 'url', 'title', 'payout', 'offer_create_time', 'offer_update_time', 'category', 'geo', 'network',
-            'description', 'landing_page'
+            'url', 'landing_page', 'keyword', 'offer_url', 'offer_title', 'offer_payout', 'offer_create_time',
+            'offer_update_time', 'offer_category', 'offer_geo', 'offer_network', 'offer_description',
+            'offer_landing_page'
         ])
         url = 'https://offervault.com/?selectedTab=topOffers&search=' + keyword + '&page=1'
         browser.get(url)
@@ -158,7 +160,7 @@ def offervault_search(keyword):
             container = browser.find_element_by_css_selector('#index-page-offerstable > tbody')
             links = container.find_elements_by_tag_name('a')
             if not links:
-                return None
+                return df
             for link in links:
                 offer_link = link.get_attribute('href')
                 # 过滤 javascript:;
