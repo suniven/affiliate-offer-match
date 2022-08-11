@@ -1,29 +1,8 @@
-import os
 import re
 import time
-import lxml
-import requests
 from selenium import webdriver
-from selenium.webdriver import ActionChains
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from sqlalchemy import Column, String, create_engine, Integer
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.dialects import mysql
-from sqlalchemy.sql import and_, asc, desc, or_
-from bs4 import BeautifulSoup
 
-url_prefix = 'https://odigger.com/offers?search=&page='
-PAGE_COUNT = 250
 MAX_REFRESH_TIME = 20
-headers = {
-    'user-agent':
-    'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
-}
-proxy = '127.0.0.1:1080'
-proxies = {'http': 'http://' + proxy, 'https': 'http://' + proxy}
 
 
 def check_if_exist(browser, element, condition):
@@ -41,81 +20,6 @@ def check_if_exist(browser, element, condition):
         return False
 
 
-def get_offer(browser, offer_link, session):
-    js = 'window.open(\"' + offer_link + '\");'
-    browser.execute_script(js)
-    time.sleep(3)
-    handles = browser.window_handles
-    browser.switch_to.window(handles[1])  # 切换标签页
-
-    try:
-        tbody = browser.find_element_by_xpath(
-            '//*[@id="app"]/section/div/div/div[2]/div/div[1]/div[2]/div[2]/div[2]/div/div/table/tbody')
-        trs = tbody.find_elements_by_tag_name('tr')
-        for tr in trs:
-            td_1 = tr.find_elements_by_tag_name('td')[0]
-            td_2 = tr.find_elements_by_tag_name('td')[1]
-            if td_1.text == 'Offer Name:':
-                odigger_offer.title = td_2.text
-            elif td_1.text == 'Preview:':
-                if td_2.find_element_by_tag_name('a').get_attribute('href'):
-                    odigger_offer.land_page = td_2.find_element_by_tag_name('a').get_attribute('href')
-            elif td_1.text == 'Categories:':
-                odigger_offer.category = td_2.text
-            elif td_1.text == 'Network:':
-                odigger_offer.network = td_2.text
-            elif td_1.text == 'Status:':
-                odigger_offer.status = td_2.text
-            elif td_1.text == 'Last Updated:':
-                odigger_offer.offer_update_time = td_2.text
-            elif td_1.text == 'Date Added:':
-                odigger_offer.offer_create_time = td_2.text
-            elif td_1.text == 'Payouts:':
-                odigger_offer.payout = td_2.text
-            elif td_1.text == 'Countries:':
-                try:
-                    # 要展开的
-                    geo_list = []
-                    td_2.find_element_by_css_selector('span > a').click()
-                    country_popovr = td_2.find_element_by_css_selector('div.country-popovr')
-                    geos = country_popovr.find_elements_by_tag_name('a')
-                    for geo in geos:
-                        geo_list.append(geo.text)
-                    if 'X' in geo_list:
-                        geo_list.remove('X')
-                    odigger_offer.geo = ' '.join(geo_list)
-                except:
-                    # 不需要展开的
-                    odigger_offer.geo = td_2.find_element_by_css_selector('span').text
-    except Exception as err:
-        print("** Get Basic Info Err. **")
-        print(err)
-
-    try:
-        odigger_offer.description = browser.find_element_by_xpath(
-            '//*[@id="app"]/section/div/div/div[2]/div/div[1]/div[4]/div[1]/div/div/div').text
-    except Exception as err:
-        print("** Get Description Error **")
-        print(err)
-
-    print("offer title: ", odigger_offer.title)
-    print("offer landing page: ", odigger_offer.land_page)
-    print("offer category: ", odigger_offer.category)
-    print("offer network: ", odigger_offer.network)
-    print("offer status: ", odigger_offer.status)
-    print("offer update time: ", odigger_offer.offer_update_time)
-    print("offer create time: ", odigger_offer.offer_create_time)
-    print("offer payout: ", odigger_offer.payout)
-    print("offer geo: ", odigger_offer.geo)
-    print("offer description: ", odigger_offer.description)
-    print("offer landing page img: ", odigger_offer.land_page_img)
-
-    odigger_offer.create_time = get_now_timestamp()
-
-    session.add(odigger_offer)
-    session.commit()
-
-
 def odigger_search(keyword):
     # # 正常模式
     # browser = webdriver.Chrome()
@@ -125,11 +29,12 @@ def odigger_search(keyword):
     option.add_argument('--headless')
     option.add_argument("--window-size=1920,1080")
     browser = webdriver.Chrome(chrome_options=option)
-
+    results = []
     try:
-        for page in range(start_page, end_page + 1):
+        page = 1
+        while True:
+            url = 'https://odigger.com/offers?search=' + keyword + '&page=' + str(page)
             print("---Current Page: {0}---".format(page))
-            url = url_prefix + str(page)
             browser.get(url)
             time.sleep(4)
             # 这网站太拉了 加载不出来就刷新
@@ -141,25 +46,43 @@ def odigger_search(keyword):
                 browser.refresh()
                 time.sleep(4)
                 refresh_time = refresh_time - 1
+
             trs = browser.find_elements_by_css_selector('#search-page-offers-table > tbody > tr')
             main_handle = browser.current_window_handle
             for tr in trs:
                 offer_link = tr.find_element_by_css_selector('h6 > a').get_attribute('href')
-                rows = session.query(Odigger_Offer).filter(Odigger_Offer.url.like(offer_link)).all()
-                if rows:
-                    print("---Offer {0} Has Already Been Visited---".format(offer_link))
-                    continue
-
                 print("--- Getting Offer {0} ---".format(offer_link))
-                get_offer(browser, offer_link, session)
-                print("--- Successfully Got ---")
+                js = 'window.open(\"' + offer_link + '\");'
+                browser.execute_script(js)
+                time.sleep(2)
+                handles = browser.window_handles
+                browser.switch_to.window(handles[1])  # 切换标签页
+
+                tbody = browser.find_element_by_xpath(
+                    '//*[@id="app"]/section/div/div/div[2]/div/div[1]/div[2]/div[2]/div[2]/div/div/table/tbody')
+                trs = tbody.find_elements_by_tag_name('tr')
+                for tr in trs:
+                    td_1 = tr.find_elements_by_tag_name('td')[0]
+                    td_2 = tr.find_elements_by_tag_name('td')[1]
+                    if td_1.text == 'Preview:':
+                        if td_2.find_element_by_tag_name('a').get_attribute('href'):
+                            preview_url = td_2.find_element_by_tag_name('a').get_attribute('href')
+                            if preview_url:
+                                preview_domain = preview_url.split('/')[2]
+                                if keyword in preview_domain:
+                                    print("匹配到: ", offer_link)
+                                    results.append(offer_link)
                 browser.close()
                 browser.switch_to.window(main_handle)
-                time.sleep(1)
-                print("Reminder: Current Page{0}".format(page))
-                # break # for test
 
+            # 看看是不是到最后一页了
+            page += 1
+            browser.get('https://odigger.com/offers?search=' + keyword + '&page=' + str(page))
+            cur_page = re.findall(r'page=[0-9]+', browser.current_url)[0][5:]
+            if cur_page == '1':
+                break
     except Exception as err:
         print(err)
-
-    browser.quit()
+    finally:
+        browser.quit()
+        return results

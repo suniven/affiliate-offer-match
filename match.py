@@ -22,17 +22,17 @@ def main():
         rows = session.query(Offervault_Offer).filter(Offervault_Offer.land_page.like(condition)).all()
         if rows:
             for row in rows:
-                with open('./results_sure.txt', 'a') as f:
+                with open('./results_db.txt', 'a') as f:
                     f.write("{0}\t{1}\t{2}\n".format(query, row.url, row.land_page))
         rows = session.query(Affpay_Offer).filter(Affpay_Offer.land_page.like(condition)).all()
         if rows:
             for row in rows:
-                with open('./results_sure.txt', 'a') as f:
+                with open('./results_db.txt', 'a') as f:
                     f.write("{0}\t{1}\t{2}\n".format(query, row.url, row.land_page))
         rows = session.query(Odigger_Offer).filter(Odigger_Offer.land_page.like(condition)).all()
         if rows:
             for row in rows:
-                with open('./results_sure.txt', 'a') as f:
+                with open('./results_db.txt', 'a') as f:
                     f.write("{0}\t{1}\t{2}\n".format(query, row.url, row.land_page))
 
     session.close()
