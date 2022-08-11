@@ -86,7 +86,7 @@ def offervault_search(query):
                             preview_url = td.find_element_by_tag_name('a').get_attribute('href')
                             if preview_url:
                                 preview_domain = preview_url.split('/')[2]
-                                if keyword in preview_domain:
+                                if query in preview_domain:
                                     print("匹配到: ", offer_link)
                                     results.append(offer_link)
                 except Exception as err:

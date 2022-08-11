@@ -39,17 +39,10 @@ def odigger_search(query):
             print("---Current Page: {0}---".format(page))
             browser.get(url)
             time.sleep(4)
-            # 这网站太拉了 加载不出来就刷新
-            refresh_time = MAX_REFRESH_TIME
-            while refresh_time:
-                if check_if_exist(browser, '#search-page-offers-table > tbody > tr', 'css'):
-                    print("Loading Successfully.")
-                    break
-                browser.refresh()
-                time.sleep(4)
-                refresh_time = refresh_time - 1
-
             trs = browser.find_elements_by_css_selector('#search-page-offers-table > tbody > tr')
+            if not trs:
+                print("没结果")
+                return results
             main_handle = browser.current_window_handle
             for tr in trs:
                 offer_link = tr.find_element_by_css_selector('h6 > a').get_attribute('href')
@@ -71,7 +64,7 @@ def odigger_search(query):
                             preview_url = td_2.find_element_by_tag_name('a').get_attribute('href')
                             if preview_url:
                                 preview_domain = preview_url.split('/')[2]
-                                if keyword in preview_domain:
+                                if query in preview_domain:
                                     print("匹配到: ", offer_link)
                                     results.append(offer_link)
                 browser.close()

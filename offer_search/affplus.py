@@ -61,7 +61,7 @@ def affplus_search(query):
                 preview_url = browser.current_url
                 if preview_url:
                     preview_domain = preview_url.split('/')[2]
-                    if keyword in preview_domain:
+                    if query in preview_domain:
                         print("匹配到: ", offer_link)
                         results.append(offer_link)
                 browser.close()

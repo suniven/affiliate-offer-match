@@ -18,22 +18,27 @@ def main():
         query_list = f.readlines()
     for query in query_list:
         query = query.strip('\n')
-        condition = '%' + '.'.join(query.split('.')[-2:]) + '%'
+        q=query
+        query = '.'.join(query.split('.')[-2:])
+        condition = '%' + query + '%'
         rows = session.query(Offervault_Offer).filter(Offervault_Offer.land_page.like(condition)).all()
         if rows:
             for row in rows:
-                with open('./results_db.txt', 'a') as f:
-                    f.write("{0}\t{1}\t{2}\n".format(query, row.url, row.land_page))
+                if q in row.land_page.split('/')[2]:
+                    with open('./results_db.txt', 'a') as f:
+                        f.write("{0}\t{1}\t{2}\n".format(q, row.url, row.land_page))
         rows = session.query(Affpay_Offer).filter(Affpay_Offer.land_page.like(condition)).all()
         if rows:
             for row in rows:
-                with open('./results_db.txt', 'a') as f:
-                    f.write("{0}\t{1}\t{2}\n".format(query, row.url, row.land_page))
+                if q in row.land_page.split('/')[2]:
+                    with open('./results_db.txt', 'a') as f:
+                        f.write("{0}\t{1}\t{2}\n".format(q, row.url, row.land_page))
         rows = session.query(Odigger_Offer).filter(Odigger_Offer.land_page.like(condition)).all()
         if rows:
             for row in rows:
-                with open('./results_db.txt', 'a') as f:
-                    f.write("{0}\t{1}\t{2}\n".format(query, row.url, row.land_page))
+                if q in row.land_page.split('/')[2]:
+                    with open('./results_db.txt', 'a') as f:
+                        f.write("{0}\t{1}\t{2}\n".format(q, row.url, row.land_page))
 
     session.close()
 
