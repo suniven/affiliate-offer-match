@@ -30,6 +30,7 @@ def affplus_search(query):
         keyword = query.split('.')[-2]
         print("Keyword: ", keyword)
         url_prefix = 'https://www.affplus.com/search?q=' + keyword + '&page='
+        browser.get(url_prefix)
         # 搜索结果数量
         count = browser.find_element_by_css_selector(
             '#__layout > div > div.main.relative > div.z-10.main-wrap.relative.max-w-screen-lg.mx-auto.rounded-lg.w-full.md\:px-3 > div.flex.flex-col.lg\:flex-row.lg\:justify-between > div.mr-0.md\:mr-2.w-full.lg\:w-7\/10 > div > div > div.relative > div > div.bg-white.flex.items-center.justify-between.px-6.py-3.font-semibold.text-xs.text-gray-400.rounded-lg > div.flex.items-center.leading-loose > span.leading-none > b').text
