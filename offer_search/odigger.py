@@ -13,10 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects import mysql
 from sqlalchemy.sql import and_, asc, desc, or_
-from comm.timestamp import get_now_timestamp
-from comm.model import Odigger_Offer
 from bs4 import BeautifulSoup
-from comm.config import sqlconn
 
 url_prefix = 'https://odigger.com/offers?search=&page='
 PAGE_COUNT = 250
@@ -50,20 +47,6 @@ def get_offer(browser, offer_link, session):
     time.sleep(3)
     handles = browser.window_handles
     browser.switch_to.window(handles[1])  # 切换标签页
-
-    odigger_offer = Odigger_Offer()
-    odigger_offer.title = ''
-    odigger_offer.url = offer_link
-    odigger_offer.category = ''
-    odigger_offer.land_page_img = ''
-    odigger_offer.land_page = ''
-    odigger_offer.geo = ''
-    odigger_offer.offer_update_time = ''
-    odigger_offer.offer_create_time = ''
-    odigger_offer.network = ''
-    odigger_offer.payout = ''
-    odigger_offer.description = ''
-    odigger_offer.status = ''
 
     try:
         tbody = browser.find_element_by_xpath(
@@ -133,11 +116,7 @@ def get_offer(browser, offer_link, session):
     session.commit()
 
 
-if __name__ == '__main__':
-    # start_page = int(input('Start Page: '))
-    # end_page = int(input('End Page: '))
-    start_page = 1
-    end_page = 250
+def odigger_search(keyword):
     # # 正常模式
     # browser = webdriver.Chrome()
     # browser.maximize_window()
@@ -146,9 +125,6 @@ if __name__ == '__main__':
     option.add_argument('--headless')
     option.add_argument("--window-size=1920,1080")
     browser = webdriver.Chrome(chrome_options=option)
-    engine = create_engine(sqlconn, echo=True, max_overflow=8)
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
 
     try:
         for page in range(start_page, end_page + 1):
@@ -187,4 +163,3 @@ if __name__ == '__main__':
         print(err)
 
     browser.quit()
-    session.close()

@@ -143,7 +143,7 @@ def get_next_page(browser, retry, next_page_xpath):
     except:
         retry = retry + 1
         print("Try Again.")
-        get_next_page(browser, retry, next_page_xpath, next_page_xpath)
+        get_next_page(browser, retry, next_page_xpath)
 
 
 def offervault_search(keyword):
@@ -216,7 +216,7 @@ def offervault_search(keyword):
                 break
             else:
                 # 跳转到下一页
-                get_next_page(browser, 0, next_page_xpath, next_page_xpath)
+                get_next_page(browser, 0, next_page_xpath)
     except Exception as err:
         print(err)
     finally:
