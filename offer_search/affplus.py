@@ -15,7 +15,7 @@ def check_if_exist(browser, element, condition):
         return False
 
 
-def affplus_search(keyword):
+def affplus_search(query):
     # # 正常模式
     # browser = webdriver.Chrome()
     # browser.maximize_window()
@@ -27,6 +27,8 @@ def affplus_search(keyword):
     browser.implicitly_wait(10)
     results = []
     try:
+        keyword = query.split('.')[-2]
+        print("Keyword: ", keyword)
         url_prefix = 'https://www.affplus.com/search?q=' + keyword + '&page='
         # 搜索结果数量
         count = browser.find_element_by_css_selector(

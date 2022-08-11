@@ -20,7 +20,7 @@ def check_if_exist(browser, element, condition):
         return False
 
 
-def odigger_search(keyword):
+def odigger_search(query):
     # # 正常模式
     # browser = webdriver.Chrome()
     # browser.maximize_window()
@@ -31,6 +31,8 @@ def odigger_search(keyword):
     browser = webdriver.Chrome(chrome_options=option)
     results = []
     try:
+        keyword = query.split('.')[-2]
+        print("Keyword: ", keyword)
         page = 1
         while True:
             url = 'https://odigger.com/offers?search=' + keyword + '&page=' + str(page)
