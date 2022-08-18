@@ -23,7 +23,6 @@ class Affpay_Offer(Base):
     network = Column(String(32))
     description = Column(String(10000))
     land_page = Column(String(1024))
-    land_page_img = Column(String(256))
     create_time = Column(mysql.BIGINT)
 
 
@@ -42,7 +41,6 @@ class Offervault_Offer(Base):
     network = Column(String(256))
     description = Column(String(10000))
     land_page = Column(String(1024))
-    land_page_img = Column(String(256))
     create_time = Column(mysql.BIGINT)
 
 
@@ -61,6 +59,5 @@ class Odigger_Offer(Base):
     network = Column(String(256))
     description = Column(String(10000))
     land_page = Column(String(1024))
-    land_page_img = Column(String(256))
     status = Column(String(24))
     create_time = Column(mysql.BIGINT)
